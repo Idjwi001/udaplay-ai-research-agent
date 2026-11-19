@@ -1,0 +1,6 @@
+# Secrets - never commit
+.env
+# Vector database built by Part 1 (re-create by running Part 1)
+chromadb/
+__pycache__/
+.ipynb_checkpoints/
