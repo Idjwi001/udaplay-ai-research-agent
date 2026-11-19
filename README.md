@@ -17,7 +17,7 @@ UdaPlay answers questions about video games. It checks its **own small database*
       │
       ├── YES ──────────────────────────────┐
       │                                     ▼
-      └── NO ─► ③ game_web_search (Tavily) ─► ④ Final answer + Source + Confidence
+      └── NO ─► ③ game_web_search (OpenAI web search) ─► ④ Final answer + Source + Confidence
 ```
 
 Think of it like a junior analyst. First you check the company spreadsheet. If the answer isn't there, you Google it, and you write down the link.
@@ -40,14 +40,15 @@ project/starter/
 
 ## Step 0: Set up your keys
 
-1. Get a free Tavily key at https://app.tavily.com/home.
-2. In `project/starter/`, copy `.env.example` to a file named exactly **`.env`** and fill it in:
+1. In `project/starter/`, copy `.env.example` to a file named exactly **`.env`** and fill it in:
 
 ```
 OPENAI_API_KEY="voc-..."                 # from the Udacity Cloud Resources panel
 OPENAI_BASE_URL="https://openai.vocareum.com/v1"
-TAVILY_API_KEY="tvly-..."
+TAVILY_API_KEY="tvly-..."               # optional: not used, see below
 ```
+
+**Web search uses OpenAI's built-in web search tool with the same `voc-` key**, so you don't need a Tavily key. The project rubric accepts any web search API ("e.g., Tavily").
 
 `.env` is in `.gitignore`, so it is never committed.
 
@@ -82,7 +83,7 @@ Open `Udaplay_02_starter_project.ipynb` (same folder) and run all cells.
 |---|---|---|
 | `retrieve_game(query)` | Find the 3 most similar games | `collection.query(...)` on the Part 1 database |
 | `evaluate_retrieval(question, retrieved_docs)` | Decide if those games answer the question | A second LLM returns an `EvaluationReport`: `useful` (True/False), `confidence` (high/medium/low), `description` (why) |
-| `game_web_search(question)` | Fallback when the judge says *not useful* | Tavily web search; returns page titles, **URLs**, and text |
+| `game_web_search(question)` | Fallback when the judge says *not useful* | OpenAI Responses API with the `web_search_preview` tool; returns an answer plus the source **URLs** |
 
 Each tool prints a line like `[STEP 1 - retrieve_game] ...`, so you can **watch the agent think** in the output.
 
@@ -112,7 +113,7 @@ Each question you ask with the same `session_id` is added to one shared message 
 1. *"Who published Grand Theft Auto: San Andreas?"*
 2. *"What platform was it released on?"* → the agent knows "it" = GTA: San Andreas.
 
-A new `session_id` starts with an empty history. The notebook shows both cases.
+A new `session_id` starts with an empty history.
 
 ### Example queries in the notebook
 
@@ -124,7 +125,7 @@ A new `session_id` starts with an empty history. The notebook shows both cases.
 | 4 | Who published Grand Theft Auto: San Andreas? | Database ✅ (Rockstar Games) |
 | 5 | What platform was it released on, and in which year? | Memory follow-up → PS2, 2004 |
 | 6 | What is Rockstar Games working on right now? | Current news → **web search** + URL |
-| 7 | Same follow-up, **new session** | No memory, so the agent can't know what "it" is |
+| - | Count saved questions per session | `demo` = 6, a new session = 0 |
 
 LLM wording and web results change between runs. That's expected and fine.
 
